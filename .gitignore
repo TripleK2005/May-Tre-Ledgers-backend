@@ -1,0 +1,34 @@
+## Go build outputs
+bin/
+dist/
+build/
+tmp/
+temp/
+
+## Test / coverage artifacts
+*.test
+*.out
+coverage.out
+
+## OS junk
+.DS_Store
+Thumbs.db
+
+## IDE / editor
+.vscode/
+.idea/
+*.swp
+
+## Local environment files
+.env
+.env.*
+!.env.example
+
+## Logs
+*.log
+
+## Compiled binaries
+*.exe
+*.dll
+*.so
+*.dylib
