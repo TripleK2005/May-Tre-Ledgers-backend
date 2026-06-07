@@ -9,18 +9,25 @@ import (
 )
 
 func main() {
-	cfg := config.Load()
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Configuration loaded")
 
 	db, err := database.Connect(cfg.DatabaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Println("Database connected")
 
 	defer db.Close()
 
-	r := router.Setup()
+	r := router.Setup(cfg, db)
 
 	log.Printf("server started at :%s", cfg.Port)
 
-	r.Run(":" + cfg.Port)
+	if err := r.Run(":" + cfg.Port); err != nil {
+		log.Fatal(err)
+	}
 }
