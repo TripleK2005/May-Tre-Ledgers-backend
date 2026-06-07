@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"may-tre-ledger-be/internal/config"
-	"may-tre-ledger-be/internal/database"
+	"may-tre-ledger-be/internal/core/config"
+	"may-tre-ledger-be/internal/core/database"
 	"may-tre-ledger-be/internal/router"
 )
 
