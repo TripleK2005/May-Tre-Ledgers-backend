@@ -7,7 +7,7 @@ import (
 )
 
 type Repository interface {
-	Create(ctx context.Context, user *User) error	
+	Create(ctx context.Context, user *User) error
 	FindByID(ctx context.Context, id string) (*User, error)
 	FindByUsername(ctx context.Context, username string) (*User, error)
 }
@@ -32,44 +32,41 @@ const (
 			full_name,
 			role_id
 		)
-		VALUES (
-			$1, $2, $3, $4, $5,
-			(
-				SELECT id
-				FROM roles
-				WHERE name = 'STAFF'
-			)
-		)
+		VALUES ($1, $2, $3, $4, $5, $6)
 	`
 
 	findUserByIDQuery = `
 		SELECT
-			id,
-			username,
-			email,
-			password_hash,
-			full_name,
-			role_id,
-			is_active,
-			created_at,
-			updated_at
-		FROM users
-		WHERE id = $1
+			u.id,
+			u.username,
+			u.email,
+			u.password_hash,
+			u.full_name,
+			u.role_id,
+			r.name,
+			u.is_active,
+			u.created_at,
+			u.updated_at
+		FROM users u
+		JOIN roles r ON r.id = u.role_id
+		WHERE u.id = $1
 	`
 
 	findUserByUsernameQuery = `
 		SELECT
-			id,
-			username,
-			email,
-			password_hash,
-			full_name,
-			role_id,
-			is_active,
-			created_at,
-			updated_at
-		FROM users
-		WHERE username = $1
+			u.id,
+			u.username,
+			u.email,
+			u.password_hash,
+			u.full_name,
+			u.role_id,
+			r.name,
+			u.is_active,
+			u.created_at,
+			u.updated_at
+		FROM users u
+		JOIN roles r ON r.id = u.role_id
+		WHERE u.username = $1
 	`
 )
 
@@ -85,13 +82,14 @@ func (r *repository) Create(
 		user.Email,
 		user.PasswordHash,
 		user.FullName,
+		user.RoleID,
 	)
 
 	return err
 }
 
 func (r *repository) FindByID(
-	ctx context.Context, 
+	ctx context.Context,
 	id string,
 ) (*User, error) {
 
@@ -107,6 +105,7 @@ func (r *repository) FindByID(
 		&user.PasswordHash,
 		&user.FullName,
 		&user.RoleID,
+		&user.RoleName,
 		&user.IsActive,
 		&user.CreatedAt,
 		&user.UpdatedAt,
@@ -136,6 +135,7 @@ func (r *repository) FindByUsername(
 		&user.PasswordHash,
 		&user.FullName,
 		&user.RoleID,
+		&user.RoleName,
 		&user.IsActive,
 		&user.CreatedAt,
 		&user.UpdatedAt,
