@@ -13,6 +13,7 @@ type User struct {
 	PasswordHash string
 	FullName     string
 	RoleID       uuid.UUID
+	RoleName     string
 	IsActive     bool
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
