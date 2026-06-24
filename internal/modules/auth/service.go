@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
-	"strings"
 	"time"
 
 	"may-tre-ledger-be/internal/core/config"
@@ -54,12 +53,7 @@ func NewService(
 }
 
 func (s *service) Register(ctx context.Context, req RegisterRequest) error {
-	roleName := strings.ToUpper(strings.TrimSpace(req.Role))
-	if roleName == "" {
-		roleName = "STAFF"
-	}
-
-	userRole, err := s.roleRepo.FindByName(ctx, roleName)
+	userRole, err := s.roleRepo.FindByName(ctx, "STAFF")
 	if err != nil {
 		return err
 	}
@@ -168,6 +162,7 @@ func (s *service) issueTokens(ctx context.Context, user *user.User) (*AuthRespon
 	}
 
 	return &AuthResponse{
+		UserID:       user.ID.String(),
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil

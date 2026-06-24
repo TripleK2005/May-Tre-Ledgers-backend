@@ -5,7 +5,6 @@ type RegisterRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=8,max=255"`
 	FullName string `json:"full_name"`
-	Role     string `json:"role"`
 }
 
 type LoginRequest struct {
@@ -14,6 +13,7 @@ type LoginRequest struct {
 }
 
 type AuthResponse struct {
+	UserID       string `json:"user_id"`
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }
