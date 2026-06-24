@@ -2,6 +2,7 @@ package user
 
 import (
 	"may-tre-ledger-be/internal/core/response"
+	"may-tre-ledger-be/internal/middleware"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -19,6 +20,19 @@ func NewHandler(service Service) *Handler {
 
 func (h *Handler) GetByID(c *gin.Context) {
 	id := c.Param("id")
+
+	currentUserID, hasUserID := c.Get(middleware.ContextUserID)
+	currentRole, hasRole := c.Get(middleware.ContextRole)
+	if !hasUserID || !hasRole {
+		response.Error(c, http.StatusUnauthorized, "missing auth context")
+		return
+	}
+
+	if currentRole != "ADMIN" && currentUserID != id {
+		response.Error(c, http.StatusForbidden, "permission denied")
+		return
+	}
+
 	user, err := h.service.GetByID(
 		c.Request.Context(),
 		id,
