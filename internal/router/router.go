@@ -7,6 +7,13 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"may-tre-ledger-be/internal/core/config"
+	"may-tre-ledger-be/internal/core/response"
+
+	"may-tre-ledger-be/internal/middleware"
+	"may-tre-ledger-be/internal/modules/auth"
+	"may-tre-ledger-be/internal/modules/role"
+	"may-tre-ledger-be/internal/modules/token"
+	"may-tre-ledger-be/internal/modules/user"
 )
 
 type Router struct {
@@ -19,21 +26,37 @@ func Setup(cfg *config.Config, db *pgxpool.Pool) *gin.Engine {
 
 	r.GET("/health", func(c *gin.Context) {
 		if err := db.Ping(c.Request.Context()); err != nil {
-			c.JSON(http.StatusServiceUnavailable, gin.H{
-				"status": "database unavailable",
-			})
+			response.Error(c, http.StatusServiceUnavailable, "database unavailable")
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{
-			"status": "ok",
-		})
+		response.Success(c, http.StatusOK, "ok", gin.H{})
 	})
 
-	
+	userRepo := user.NewRepository(db)
+	roleRepo := role.NewRepository(db)
+	tokenRepo := token.NewRepository(db)
 
+	userService := user.NewService(userRepo)
+	userHandler := user.NewHandler(userService)
 
+	authService := auth.NewService(userRepo, roleRepo, tokenRepo, cfg)
+	authHandler := auth.NewHandler(authService)
 
+	authGroup := r.Group("/auth")
+	{
+		authGroup.POST("/register", authHandler.Register)
+		authGroup.POST("/login", authHandler.Login)
+		authGroup.POST("/refresh", authHandler.RefreshToken)
+		authGroup.POST("/logout", authHandler.Logout)
+	}
+
+	userGroup := r.Group("/users")
+	userGroup.Use(middleware.Auth(cfg.JWTSecret))
+	{
+		userGroup.Use(middleware.RequireRoles("ADMIN", "STAFF"))
+		userGroup.GET("/:id", userHandler.GetByID)
+	}
 
 	return r
 }
